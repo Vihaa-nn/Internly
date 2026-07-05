@@ -20,6 +20,7 @@ def run_pipeline_start(
     target_role: str,
     target_company: str,
     allow_search: bool = True,
+    job_description: str | None = None,
 ) -> PipelineStartResult:
     # ── 1. Fetch DSA status and check if company intel is cached in DB ─────────
     # These DB lookups are extremely fast (< 5ms)
@@ -37,9 +38,9 @@ def run_pipeline_start(
     # Define tasks for concurrent execution
     def parse_resume():
         if resume_file_path:
-            return evaluate_resume_file(resume_file_path)
+            return evaluate_resume_file(resume_file_path, job_description)
         elif resume_text:
-            return resume_text, evaluate_resume_text(resume_text)
+            return resume_text, evaluate_resume_text(resume_text, job_description)
         else:
             raise ValueError("Provide either resume_file_path or resume_text.")
 
@@ -68,6 +69,7 @@ def run_pipeline_start(
         profile=resume_profile,
         target_role=target_role,
         target_company=target_company,
+        job_description=job_description,
     )
 
     if need_search and company_intel:
@@ -109,4 +111,7 @@ def resume_profile_from_candidate(candidate) -> ResumeProfile:
         projects=candidate.projects,
         education=candidate.education,
         notable_gaps=candidate.notable_gaps,
+        target_languages=getattr(candidate, "target_languages", []),
+        alignment_signals=getattr(candidate, "alignment_signals", []),
+        skill_gaps=getattr(candidate, "skill_gaps", []),
     )

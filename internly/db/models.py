@@ -21,6 +21,10 @@ class Candidate(Base):
     notable_gaps: Mapped[list[str]] = mapped_column(JSON, default=list)
     target_role: Mapped[str] = mapped_column(String(255), index=True)
     target_company: Mapped[str] = mapped_column(String(255), index=True)
+    job_description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    target_languages: Mapped[list[str]] = mapped_column(JSON, default=list)
+    alignment_signals: Mapped[list[str]] = mapped_column(JSON, default=list)
+    skill_gaps: Mapped[list[str]] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     sessions: Mapped[list["InterviewSession"]] = relationship(back_populates="candidate")

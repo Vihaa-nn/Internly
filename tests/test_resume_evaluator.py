@@ -84,4 +84,4 @@ def test_evaluate_resume_file(mock_eval_text, mock_load_text):
     assert text == "File text content"
     assert profile == expected_profile
     mock_load_text.assert_called_once_with("some_file.pdf")
-    mock_eval_text.assert_called_once_with("File text content")
+    mock_eval_text.assert_called_once_with("File text content", None)

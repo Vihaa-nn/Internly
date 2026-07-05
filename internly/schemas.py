@@ -11,6 +11,9 @@ class ResumeProfile(BaseModel):
     projects: list[str] = Field(default_factory=list)
     education: str = ""
     notable_gaps: list[str] = Field(default_factory=list)
+    target_languages: list[str] = Field(default_factory=list)
+    alignment_signals: list[str] = Field(default_factory=list)
+    skill_gaps: list[str] = Field(default_factory=list)
 
 
 class CompanyIntel(BaseModel):

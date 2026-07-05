@@ -23,6 +23,7 @@ def create_candidate(
     profile: ResumeProfile,
     target_role: str,
     target_company: str,
+    job_description: str | None = None,
 ) -> Candidate:
     candidate = Candidate(
         resume_text=resume_text,
@@ -33,6 +34,10 @@ def create_candidate(
         notable_gaps=profile.notable_gaps,
         target_role=target_role,
         target_company=target_company,
+        job_description=job_description,
+        target_languages=profile.target_languages,
+        alignment_signals=profile.alignment_signals,
+        skill_gaps=profile.skill_gaps,
     )
     session.add(candidate)
     session.flush()

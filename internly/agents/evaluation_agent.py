@@ -21,7 +21,12 @@ def evaluate_interview(
                 "system",
                 "You evaluate a DSA-only mock interview transcript. Score the candidate's "
                 "algorithmic reasoning, communication, and role fit. Do not assume hidden "
-                "interview-agent reasoning; use only the visible transcript and context.",
+                "interview-agent reasoning; use only the visible transcript and context.\n"
+                "Specifically, pay close attention to any 'alignment_signals' and 'skill_gaps' "
+                "in the resume profile when determining the role fit score and providing strengths, weaknesses, "
+                "recommendation, and detailed feedback. Synthesize how their interview performance "
+                "combined with their alignment/gaps relative to the target job description impacts their "
+                "overall suitability for the target role.",
             ),
             (
                 "human",

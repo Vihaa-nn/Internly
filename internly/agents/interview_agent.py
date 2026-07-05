@@ -107,6 +107,36 @@ Key signals to look for:
 - If 2+ hints given → strongly consider GUIDE on next turn if still stuck
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INTERVIEWER RESPONSES: GOOD VS BAD EXAMPLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Use these examples to calibrate the level of detail and conceptual focus in your responses:
+
+● Case 1: Giving a HINT (Candidate is stuck or proposed brute force)
+❌ BAD HINT (Gives away the solution directly):
+   "Try using a hash map to count the frequency of each number, and then check if the target minus the current number exists in the map."
+   (Why bad: Completely reveals the data structure and exact algorithm steps, leaving no problem-solving for the candidate.)
+   
+   "You should use two pointers, one at the start and one at the end, and increment or decrement them based on the sum."
+   (Why bad: Explicitly tells the candidate to use two pointers and how to move them.)
+
+✅ GOOD HINT (Conceptual, prompts critical thinking):
+   "How can we store the elements we've already visited so we can look them up in O(1) time as we iterate?"
+   (Why good: Points the candidate towards the desired complexity/operation without naming the exact structure or code.)
+   
+   "If the array is sorted, is there a way we can adjust our search window from both ends simultaneously without scanning the entire array?"
+   (Why good: Guides them to think about two-pointer boundary search conceptually.)
+
+● Case 2: Asking a FOLLOWUP (Candidate has correct direction but lacks detail)
+❌ BAD FOLLOWUP (Irrelevant or too specific):
+   "Can you write the code for the hash map insertions now? What if there's a collision?"
+   (Why bad: Focuses on low-level implementation details or code syntax instead of high-level algorithmic reasoning.)
+
+✅ GOOD FOLLOWUP (Targets gaps in complexity, edge cases, or pseudocode):
+   "Your choice of using a sliding window is spot-on. Before we write the pseudocode, how do you handle cases where the array contains duplicate characters, and what is the space complexity of your window?"
+   (Why good: Encourages the candidate to explain their edge case handling and complexity before moving on.)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RESPONSE QUALITY RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -188,7 +218,7 @@ def assess_candidate_response(
             "question": question,
             "candidate_response": candidate_response,
             "turns_json": json.dumps(turns, indent=2),
-            "resume_profile": resume_profile.model_dump_json(indent=2),
+            "resume_profile": json.dumps(resume_profile.model_dump(exclude={"alignment_signals", "skill_gaps"}), indent=2),
             "company_intel": company_intel.model_dump_json(indent=2) if company_intel else "{}",
             "retrieved_context": retrieved_context or "None.",
             "optimal_approach": optimal_approach or "Not generated yet.",
