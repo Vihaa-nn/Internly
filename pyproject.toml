@@ -1,0 +1,38 @@
+[project]
+name = "internly"
+version = "0.1.0"
+description = "Multi-agent resume review and DSA-only mock interview system."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=0.5.0",
+    "docx2txt>=0.8",
+    "langchain>=0.2.11",
+    "langchain-chroma>=0.1.2",
+    "langchain-community>=0.2.10",
+    "langchain-google-genai>=1.0.8",
+    "pydantic>=2.7.0",
+    "pypdf>=4.2.0",
+    "python-dotenv>=1.0.1",
+    "sqlalchemy>=2.0.31",
+    "streamlit>=1.36.0",
+    "tavily-python>=0.3.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "ruff>=0.5.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.setuptools.packages.find]
+include = ["internly*"]
+exclude = ["streamlit_app*", "scripts*", "tests*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
