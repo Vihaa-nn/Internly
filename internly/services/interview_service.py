@@ -141,8 +141,34 @@ def handle_candidate_turn(
         text=candidate_response,
     )
     question_log = interview_session.transcript_json[question_index]
-    question = _load_question_for_log(session, question_log)
     turns = question_log.get("turns", [])
+
+    # ── 1b. Handle introduction turn without querying DSA database ───────────
+    if question_log.get("question") == "Introduction":
+        action = assess_candidate_response(
+            question="Introduction",
+            candidate_response=candidate_response,
+            turns=turns,
+            resume_profile=resume_profile,
+            company_intel=company_intel,
+            optimal_approach=None,
+            optimal_time_complexity=None,
+            retrieved_context="",
+        )
+        crud.append_interview_turn(
+            session,
+            interview_session_id,
+            question_index,
+            role="agent",
+            text=action.text,
+            turn_type=action.type,
+        )
+        if action.type in {"accept", "guide"}:
+            crud.mark_question_resolved(session, interview_session_id, question_index)
+        return action
+
+    # Load the DSA question from database for all subsequent technical rounds
+    question = _load_question_for_log(session, question_log)
 
     # ── 2. Hard bypass: candidate explicitly wants to skip ────────────────────
     # We still let the LLM handle all other cases, but an explicit "move on" /
