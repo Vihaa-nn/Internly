@@ -595,11 +595,22 @@ function EvaluationPanel({
   ev,
   alignmentSignals,
   skillGaps,
+  achievements,
+  hasJobDescription,
 }: {
   ev: EvaluationResult;
   alignmentSignals: string[];
   skillGaps: string[];
+  achievements: string[];
+  hasJobDescription: boolean;
 }) {
+  const jdAlignmentItems = hasJobDescription ? alignmentSignals : [];
+  const resumeStrengthItems = [
+    ...achievements,
+    ...(!hasJobDescription ? alignmentSignals : []),
+  ];
+  const strengthItems = [...resumeStrengthItems, ...ev.strengths];
+
   return (
     <div className="space-y-5 pb-8">
       <Eyebrow className="flex items-center gap-1.5">
@@ -628,11 +639,11 @@ function EvaluationPanel({
             <FileText className="w-3 h-3" /> Resume Evaluation
           </p>
 
-          {alignmentSignals.length > 0 && (
+          {jdAlignmentItems.length > 0 && (
             <EvalCard className="border-emerald-800/50!">
               <EvalLabel color="text-emerald-400">JD Alignment Strengths</EvalLabel>
               <div className="space-y-1.5">
-                {alignmentSignals.map((s, i) => (
+                {jdAlignmentItems.map((s, i) => (
                   <div key={i} className="flex items-start gap-2 text-emerald-200 text-[0.83rem] leading-relaxed">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
                     {s}
@@ -655,13 +666,13 @@ function EvaluationPanel({
             </EvalCard>
           )}
 
-          {ev.strengths.length > 0 && (
+          {strengthItems.length > 0 && (
             <EvalCard>
               <EvalLabel className="flex items-center gap-1.5">
                 <Dumbbell className="w-3 h-3 inline" /> Strengths
               </EvalLabel>
               <div className="space-y-1.5">
-                {ev.strengths.map((s, i) => (
+                {strengthItems.map((s, i) => (
                   <p key={i} className="text-foreground text-[0.85rem] leading-snug flex items-start gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 mt-0.5 flex-shrink-0" />
                     {s}
@@ -1036,6 +1047,8 @@ export default function InterviewPage() {
                   ev={evaluation}
                   alignmentSignals={analyseResult?.resume_profile.alignment_signals ?? []}
                   skillGaps={analyseResult?.resume_profile.skill_gaps ?? []}
+                  achievements={analyseResult?.resume_profile.achievements ?? []}
+                  hasJobDescription={analyseResult?.job_description_provided ?? false}
                 />
               )}
             </div>

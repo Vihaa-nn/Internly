@@ -3,12 +3,14 @@ const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface ResumeProfile {
+  name: string;
   skills: string[];
   years_experience: number;
   projects: string[];
   education: string;
   notable_gaps: string[];
   target_languages: string[];
+  achievements: string[];
   alignment_signals: string[];
   skill_gaps: string[];
 }
@@ -26,6 +28,7 @@ export interface AnalyseResult {
   dsa_message: string;
   resume_profile: ResumeProfile;
   company_intel: CompanyIntel | null;
+  job_description_provided?: boolean;
 }
 
 export interface StartInterviewResult {
