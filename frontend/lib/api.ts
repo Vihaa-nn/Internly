@@ -42,8 +42,9 @@ export interface NextQuestionResult {
 }
 
 export interface TurnResult {
-  type: "hint" | "followup" | "guide" | "accept";
+  type: "hint" | "followup" | "guide" | "accept" | "conversation";
   text: string;
+  session_context?: string;
 }
 
 export interface QuestionBreakdown {
@@ -91,7 +92,14 @@ export async function analyseResume(
   const res = await fetch(`${BASE}/api/analyse`, { method: "POST", body: form });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail ?? `Analysis failed (${res.status})`);
+    const detail = err.detail;
+    const message =
+      typeof detail === "string"
+        ? detail
+        : Array.isArray(detail)
+          ? detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join("; ")
+          : `Analysis failed (${res.status})`;
+    throw new Error(message);
   }
   return res.json();
 }

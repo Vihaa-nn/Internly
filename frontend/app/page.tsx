@@ -2,83 +2,125 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Target,
+  Brain,
+  BarChart3,
+  Search,
+  FileText,
+  Upload,
+  Sparkles,
+  User,
+  GraduationCap,
+  AlertTriangle,
+  Wrench,
+  Laptop,
+  Rocket,
+  ClipboardList,
+  HelpCircle,
+  TrendingUp,
+  Sprout,
+  Loader2,
+  Code2,
+  MessageSquare,
+} from "lucide-react";
 import { analyseResume, type AnalyseResult } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
+import { formatDisplayLabel } from "@/lib/format";
 import { Separator } from "@/components/ui/separator";
+import {
+  BrandMark,
+  BrandTitle,
+  GlassCard,
+  Eyebrow,
+  SectionTitle,
+  PrimaryCta,
+} from "@/components/internly-ui";
 
-// ─── Navbar ──────────────────────────────────────────────────────────────────
+const FEATURES = [
+  { icon: Target, label: "Company-specific questions" },
+  { icon: Brain, label: "AI adaptive interviewer" },
+  { icon: BarChart3, label: "Detailed performance report" },
+  { icon: Search, label: "JD alignment analysis" },
+] as const;
 
-function Navbar() {
+const STATS = [
+  { value: "DSA-first", label: "Interview focus" },
+  { value: "Real-time", label: "Adaptive feedback" },
+  { value: "Tailored", label: "Per company & role" },
+] as const;
+
+function LandingBackground() {
   return (
-    <nav className="flex items-center justify-between px-0 py-4 border-b border-white/5 mb-0">
-      <div className="flex items-center gap-2.5">
-        <div
-          className="logo-glow w-8 h-8 rounded-[10px] flex items-center justify-center text-lg"
-          style={{ background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)" }}
-        >
-          ⚡
-        </div>
-        <span
-          className="text-[1.05rem] font-black tracking-tight"
-          style={{
-            background: "linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 70%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Internly
-        </span>
-      </div>
-      <span className="text-[0.68rem] font-bold tracking-widest uppercase text-slate-600">
-        AI Interview Prep
-      </span>
-    </nav>
+    <div className="landing-bg" aria-hidden>
+      <div className="landing-bg__blob landing-bg__blob--indigo" />
+      <div className="landing-bg__blob landing-bg__blob--violet" />
+      <div className="landing-bg__blob landing-bg__blob--cyan" />
+      <div className="landing-bg__blob landing-bg__blob--rose" />
+      <div className="landing-bg__blob landing-bg__blob--emerald" />
+    </div>
   );
 }
 
-// ─── Hero ─────────────────────────────────────────────────────────────────────
-
-function Hero() {
+function LandingNav() {
   return (
-    <div className="text-center py-10 px-4">
-      <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/25 text-indigo-300 text-[0.72rem] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-5">
-        <span className="pulse-dot w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+    <header className="landing-nav sticky top-0 z-30">
+      <div className="max-w-[1280px] mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <BrandMark />
+          <BrandTitle className="text-[1.15rem]" />
+        </div>
+        <span className="hidden sm:inline text-[0.68rem] font-bold tracking-[0.18em] uppercase text-muted-foreground">
+          AI Interview Prep
+        </span>
+      </div>
+    </header>
+  );
+}
+
+function LandingHero() {
+  return (
+    <div className="flex flex-col justify-center h-full max-w-xl">
+      <div className="inline-flex items-center gap-2 bg-card/60 border border-border text-primary text-[0.68rem] font-bold tracking-widest uppercase px-4 py-1.5 rounded-full mb-7 w-fit backdrop-blur-sm">
+        <span className="pulse-dot w-1.5 h-1.5 bg-primary rounded-full" />
         AI-Powered · Personalised · Real-time
       </div>
-      <h1
-        className="text-5xl font-black leading-tight mb-4"
-        style={{
-          background: "linear-gradient(160deg, #ffffff 0%, #e0e7ff 45%, #a5b4fc 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-        }}
-      >
-        Crack Your Next<br />Technical Interview
+
+      <h1 className="text-[2.6rem] sm:text-5xl xl:text-[3.4rem] font-black leading-[1.06] mb-5 text-foreground tracking-tight">
+        Crack Your Next
+        <br />
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-violet-400 to-cyan-300">
+          Technical Interview
+        </span>
       </h1>
-      <p className="text-slate-500 text-[0.92rem] max-w-xl mx-auto leading-relaxed mb-6">
-        Upload your resume, pick a target company, and get a fully personalised
-        DSA mock interview modelled on how that company actually hires.
+
+      <p className="text-muted-foreground text-[1.02rem] leading-relaxed mb-8 max-w-md">
+        Upload your resume, pick a target company, and get a fully personalised DSA mock
+        interview modelled on how that company actually hires.
       </p>
-      <div className="flex justify-center flex-wrap gap-2">
-        {[
-          "🎯 Company-specific questions",
-          "🧠 AI adaptive interviewer",
-          "📊 Detailed performance report",
-          "🔍 JD alignment analysis",
-        ].map((pill) => (
+
+      <div className="flex flex-wrap gap-2 mb-10">
+        {FEATURES.map(({ icon: Icon, label }) => (
           <span
-            key={pill}
-            className="inline-flex items-center gap-1.5 bg-white/[0.035] border border-white/[0.07] text-slate-400 text-[0.72rem] font-medium px-3 py-1.5 rounded-full"
+            key={label}
+            className="inline-flex items-center gap-1.5 bg-card/50 border border-border text-muted-foreground text-[0.72rem] font-medium px-3 py-2 rounded-full backdrop-blur-sm"
           >
-            {pill}
+            <Icon className="w-3.5 h-3.5 text-primary shrink-0" strokeWidth={2} />
+            {label}
           </span>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center">
+        {STATS.map(({ value, label }) => (
+          <div key={label} className="landing-stat mb-3 sm:mb-0">
+            <p className="text-[1.35rem] font-black text-foreground leading-none">{value}</p>
+            <p className="text-[0.72rem] text-muted-foreground mt-1">{label}</p>
+          </div>
         ))}
       </div>
     </div>
   );
 }
-
-// ─── Setup form ───────────────────────────────────────────────────────────────
 
 interface SetupFormProps {
   onResult: (result: AnalyseResult, company: string, role: string) => void;
@@ -105,53 +147,64 @@ function SetupForm({ onResult }: SetupFormProps) {
     setStatus("Parsing resume and extracting profile…");
     try {
       setTimeout(() => setStatus("Researching company interview patterns…"), 3000);
-      const result = await analyseResume(resumeFile, company.trim(), role.trim(), jd.trim());
+      const formattedCompany = formatDisplayLabel(company);
+      const formattedRole = formatDisplayLabel(role);
+      const result = await analyseResume(resumeFile, formattedCompany, formattedRole, jd.trim());
       setStatus("Analysis complete!");
-      onResult(result, company.trim(), role.trim());
+      onResult(result, formattedCompany, formattedRole);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Is the backend running?");
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      if (message === "Failed to fetch") {
+        setError(
+          "Cannot reach the backend at http://localhost:8000. Start it with: uvicorn internly.api:app --reload --port 8000"
+        );
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
       setStatus("");
     }
   }
 
-  const inputCls =
-    "w-full bg-[rgba(10,10,20,0.8)] border border-[rgba(45,45,74,0.7)] rounded-xl text-slate-200 text-[0.84rem] px-3 py-2.5 outline-none focus:border-indigo-500/55 focus:ring-2 focus:ring-indigo-500/10 placeholder-slate-700 transition-all";
-  const labelCls = "block text-[0.72rem] font-bold uppercase tracking-widest text-slate-600 mb-1.5";
-
   return (
-    <div className="max-w-[720px] mx-auto">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-gradient-to-br from-[rgba(30,30,46,0.95)] to-[rgba(20,20,38,0.95)] border border-indigo-500/14 rounded-[18px] p-6 shadow-[0_18px_48px_rgba(0,0,0,0.38),0_0_60px_rgba(99,102,241,0.06)] backdrop-blur-xl"
-      >
+    <div className="relative w-full max-w-[460px] mx-auto lg:mx-0 lg:ml-auto">
+      <span className="landing-float-badge -top-3 -left-2 sm:-left-6 text-violet-300 border-violet-800/50">
+        <Code2 className="w-3.5 h-3.5 text-violet-400" />
+        LeetCode integrated
+      </span>
+      <span className="landing-float-badge -bottom-3 -right-1 sm:-right-5 text-emerald-300 border-emerald-800/40">
+        <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+        Live mock interview
+      </span>
+
+      <form onSubmit={handleSubmit} className="landing-form-card p-7 sm:p-8 w-full">
         <div className="flex items-center gap-3 mb-1">
-          <div className="w-8 h-8 bg-indigo-500/15 border border-indigo-500/25 rounded-[10px] flex items-center justify-center text-base">
-            🎯
+          <div className="w-9 h-9 bg-secondary border border-border rounded-xl flex items-center justify-center">
+            <Target className="w-4 h-4 text-primary" strokeWidth={2} />
           </div>
-          <p className="text-[1rem] font-extrabold text-slate-200 tracking-tight">
-            Set up your session
+          <p className="text-[1.1rem] font-extrabold text-foreground tracking-tight">
+            Start your session
           </p>
         </div>
-        <p className="text-[0.82rem] text-slate-600 mb-5 pl-11">
+        <p className="text-[0.82rem] text-muted-foreground mb-6 pl-12">
           Upload your resume and choose the role to prepare for.
         </p>
 
-        {/* Resume upload */}
         <div className="mb-4">
-          <label className={labelCls}>Resume (PDF or DOCX)</label>
+          <label className="field-label">Resume (PDF or DOCX)</label>
           <div
             onClick={() => fileRef.current?.click()}
-            className="flex items-center gap-3 bg-[rgba(10,10,20,0.8)] border-[1.5px] border-dashed border-[rgba(45,45,74,0.8)] rounded-[14px] p-4 cursor-pointer hover:border-indigo-500/40 transition-colors"
+            className="flex items-center gap-3 bg-card/80 border-[1.5px] border-dashed border-primary/40 rounded-[14px] p-4 cursor-pointer hover:border-primary transition-colors duration-200"
           >
-            <span className="text-2xl">📄</span>
-            <div>
-              <p className="text-slate-300 text-[0.85rem] font-medium">
+            <FileText className="w-8 h-8 text-primary flex-shrink-0" strokeWidth={1.5} />
+            <div className="min-w-0">
+              <p className="text-foreground text-[0.85rem] font-medium truncate">
                 {resumeFile ? resumeFile.name : "Click to upload resume"}
               </p>
-              <p className="text-slate-700 text-[0.75rem]">PDF or DOCX, up to 10 MB</p>
+              <p className="text-muted-foreground text-[0.75rem]">PDF or DOCX, up to 10 MB</p>
             </div>
+            <Upload className="w-4 h-4 text-muted-foreground ml-auto shrink-0" />
             <input
               ref={fileRef}
               type="file"
@@ -162,21 +215,20 @@ function SetupForm({ onResult }: SetupFormProps) {
           </div>
         </div>
 
-        {/* Company + Role */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
-            <label className={labelCls}>Target Company</label>
+            <label className="field-label">Target Company</label>
             <input
-              className={inputCls}
+              className="field-input"
               placeholder="e.g. Google, Stripe"
               value={company}
               onChange={(e) => setCompany(e.target.value)}
             />
           </div>
           <div>
-            <label className={labelCls}>Target Role</label>
+            <label className="field-label">Target Role</label>
             <input
-              className={inputCls}
+              className="field-input"
               placeholder="e.g. SDE-2, Backend Eng."
               value={role}
               onChange={(e) => setRole(e.target.value)}
@@ -184,11 +236,10 @@ function SetupForm({ onResult }: SetupFormProps) {
           </div>
         </div>
 
-        {/* JD */}
         <div className="mb-5">
-          <label className={labelCls}>Job Description (optional)</label>
+          <label className="field-label">Job Description (optional)</label>
           <textarea
-            className={`${inputCls} min-h-[72px] resize-none`}
+            className="field-input min-h-[80px] resize-none"
             placeholder="Paste the JD to detect alignment signals and skill gaps…"
             value={jd}
             onChange={(e) => setJd(e.target.value)}
@@ -196,63 +247,26 @@ function SetupForm({ onResult }: SetupFormProps) {
         </div>
 
         {error && (
-          <p className="text-red-400 text-[0.82rem] mb-3 bg-red-500/8 border border-red-500/15 rounded-xl px-3 py-2">
+          <p className="text-red-400 text-[0.82rem] mb-3 bg-red-950/40 border border-red-900 rounded-xl px-3 py-2">
             {error}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 rounded-[14px] font-bold text-[0.9rem] text-white transition-all disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-0.5"
-          style={{
-            background: "linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)",
-            boxShadow: "0 4px 28px rgba(99,102,241,0.45)",
-          }}
-        >
+        <PrimaryCta type="submit" disabled={loading}>
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
               {status || "Analysing…"}
             </span>
           ) : (
-            "✨ Analyse Resume & Research Company"
+            <span className="flex items-center justify-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              Analyse Resume & Research Company
+            </span>
           )}
-        </button>
+        </PrimaryCta>
       </form>
     </div>
-  );
-}
-
-// ─── Results ──────────────────────────────────────────────────────────────────
-
-function SectionHeader({ eyebrow, title, sub }: { eyebrow: string; title: string; sub: string }) {
-  return (
-    <div className="mb-6">
-      <p className="text-[0.66rem] font-extrabold tracking-[0.18em] uppercase text-indigo-500 mb-1">
-        {eyebrow}
-      </p>
-      <h2 className="text-[1.45rem] font-black text-slate-200 mb-1">{title}</h2>
-      <p className="text-slate-500 text-[0.84rem]">{sub}</p>
-    </div>
-  );
-}
-
-function ProfileCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div
-      className={`bg-gradient-to-br from-[rgba(28,28,44,0.9)] to-[rgba(20,20,38,0.9)] border border-[rgba(45,45,74,0.5)] rounded-[18px] p-6 mb-4 hover:border-indigo-500/22 transition-all ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function CardEyebrow({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-[0.66rem] font-bold tracking-[0.14em] uppercase text-slate-600 mb-3">
-      {children}
-    </p>
   );
 }
 
@@ -261,9 +275,10 @@ interface ResultsProps {
   company: string;
   role: string;
   onStartInterview: () => void;
+  onBack: () => void;
 }
 
-function Results({ result, company, role, onStartInterview }: ResultsProps) {
+function Results({ result, company, role, onStartInterview, onBack }: ResultsProps) {
   const { resume_profile: profile, company_intel: intel } = result;
 
   let years = Math.floor(profile.years_experience);
@@ -274,186 +289,193 @@ function Results({ result, company, role, onStartInterview }: ResultsProps) {
   else if (years > 0) expText = `${years} yr${years !== 1 ? "s" : ""}`;
   else if (months > 0) expText = `${months} mo${months !== 1 ? "s" : ""}`;
 
-  const difficultyClass: Record<string, string> = {
-    easy: "bg-emerald-500/14 text-emerald-300 border-emerald-500/25",
-    medium: "bg-amber-500/12 text-amber-300 border-amber-500/25",
-    hard: "bg-red-500/12 text-red-300 border-red-500/22",
-  };
-
   return (
-    <div className="mt-12">
-      <Separator className="bg-white/5 mb-10" />
-
-      {/* Resume Analysis */}
-      <div className="mb-2">
-        <SectionHeader
-          eyebrow="📄 Resume Analysis"
-          title={`${company} — ${role}`}
-          sub="Your personalised profile extracted by our AI evaluator."
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-8 gap-4">
+        <SectionTitle
+          eyebrow="Analysis Complete"
+          title={`${formatDisplayLabel(company)} — ${formatDisplayLabel(role)}`}
+          sub="Your personalised profile and company research."
         />
+        <button
+          type="button"
+          onClick={onBack}
+          className="text-primary text-[0.82rem] font-semibold hover:underline shrink-0"
+        >
+          ← New session
+        </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-5 mb-10">
-        {/* Col 1: Experience + Education + Gaps */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-10">
         <div>
-          <ProfileCard>
-            <CardEyebrow>👤 Experience</CardEyebrow>
-            <p className="text-4xl font-black text-slate-200 leading-tight">{expText}</p>
-            <p className="text-slate-600 text-[0.78rem] mt-1.5">of professional experience</p>
-          </ProfileCard>
+          <GlassCard hover className="mb-4">
+            <Eyebrow className="flex items-center gap-1.5">
+              <User className="w-3 h-3" /> Experience
+            </Eyebrow>
+            <p className="text-4xl font-black text-foreground leading-tight">{expText}</p>
+            <p className="text-muted-foreground text-[0.78rem] mt-1.5">of professional experience</p>
+          </GlassCard>
 
           {profile.education && (
-            <ProfileCard>
-              <CardEyebrow>🎓 Education</CardEyebrow>
+            <GlassCard hover className="mb-4">
+              <Eyebrow className="flex items-center gap-1.5">
+                <GraduationCap className="w-3 h-3" /> Education
+              </Eyebrow>
               {profile.education
                 .split(/[;\n]/)
                 .filter(Boolean)
                 .map((e, i) => (
-                  <p key={i} className="text-slate-300 text-[0.88rem] leading-relaxed py-1.5 border-b border-[rgba(45,45,74,0.4)] last:border-0">
-                    📍 {e.trim()}
+                  <p key={i} className="text-muted-foreground text-[0.88rem] leading-relaxed py-1.5 border-b border-border last:border-0">
+                    {e.trim()}
                   </p>
                 ))}
-            </ProfileCard>
+            </GlassCard>
           )}
 
           {profile.notable_gaps.length > 0 && (
-            <ProfileCard>
-              <CardEyebrow>⚡ Notable Gaps</CardEyebrow>
+            <GlassCard hover>
+              <Eyebrow className="flex items-center gap-1.5">
+                <AlertTriangle className="w-3 h-3" /> Notable Gaps
+              </Eyebrow>
               {profile.notable_gaps.map((g, i) => (
-                <div key={i} className="bg-red-500/7 border border-red-500/14 rounded-[10px] px-3 py-2 text-red-300 text-[0.84rem] mb-2 last:mb-0 font-medium">
-                  ⚠ {g}
+                <div key={i} className="bg-red-950/40 border border-red-900 rounded-[10px] px-3 py-2 text-red-300 text-[0.84rem] mb-2 last:mb-0 font-medium">
+                  {g}
                 </div>
               ))}
-            </ProfileCard>
+            </GlassCard>
           )}
         </div>
 
-        {/* Col 2: Skills */}
         <div>
-          <ProfileCard className="min-h-[300px]">
-            <CardEyebrow>🛠 Skills & Technologies</CardEyebrow>
+          <GlassCard hover className="min-h-[300px]">
+            <Eyebrow className="flex items-center gap-1.5">
+              <Wrench className="w-3 h-3" /> Skills & Technologies
+            </Eyebrow>
             <div className="flex flex-wrap mt-1">
               {profile.skills.length > 0 ? (
                 profile.skills.map((s) => (
-                  <span key={s} className="inline-block bg-indigo-500/10 text-indigo-300 border border-indigo-500/18 rounded-[7px] text-[0.74rem] font-semibold px-2.5 py-1 m-0.5">
+                  <span key={s} className="inline-block bg-secondary text-primary border border-border rounded-[7px] text-[0.74rem] font-semibold px-2.5 py-1 m-0.5">
                     {s}
                   </span>
                 ))
               ) : (
-                <span className="text-slate-600 text-[0.85rem]">No skills extracted</span>
+                <span className="text-muted-foreground text-[0.85rem]">No skills extracted</span>
               )}
             </div>
             {profile.target_languages.length > 0 && (
               <>
-                <CardEyebrow>💻 Proficient Languages</CardEyebrow>
+                <Eyebrow className="flex items-center gap-1.5 mt-4">
+                  <Laptop className="w-3 h-3" /> Proficient Languages
+                </Eyebrow>
                 <div className="flex flex-wrap">
                   {profile.target_languages.map((l) => (
-                    <span key={l} className="inline-block bg-purple-500/14 text-purple-300 border border-purple-500/28 rounded-[7px] text-[0.74rem] font-semibold px-2.5 py-1 m-0.5">
+                    <span key={l} className="inline-block bg-violet-950/40 text-violet-300 border border-violet-800 rounded-[7px] text-[0.74rem] font-semibold px-2.5 py-1 m-0.5">
                       {l}
                     </span>
                   ))}
                 </div>
               </>
             )}
-          </ProfileCard>
+          </GlassCard>
         </div>
 
-        {/* Col 3: Projects */}
         <div>
-          <ProfileCard className="min-h-[300px]">
-            <CardEyebrow>🚀 Projects</CardEyebrow>
+          <GlassCard hover className="min-h-[300px]">
+            <Eyebrow className="flex items-center gap-1.5">
+              <Rocket className="w-3 h-3" /> Projects
+            </Eyebrow>
             {profile.projects.length > 0 ? (
               profile.projects.map((p, i) => (
-                <div key={i} className="flex items-start gap-2.5 py-2 border-b border-[rgba(45,45,74,0.35)] last:border-0">
-                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }} />
-                  <span className="text-slate-300 text-[0.86rem] leading-relaxed">{p}</span>
+                <div key={i} className="flex items-start gap-2.5 py-2 border-b border-border last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-primary" />
+                  <span className="text-muted-foreground text-[0.86rem] leading-relaxed">{p}</span>
                 </div>
               ))
             ) : (
-              <span className="text-slate-600 text-[0.85rem]">No projects extracted</span>
+              <span className="text-muted-foreground text-[0.85rem]">No projects extracted</span>
             )}
-          </ProfileCard>
+          </GlassCard>
         </div>
       </div>
 
-      {/* Company Intel */}
-      <Separator className="bg-white/5 my-10" />
-      <SectionHeader
-        eyebrow="🏢 Company Intel"
-        title={company}
+      <Separator className="bg-border my-10" />
+      <SectionTitle
+        eyebrow="Company Intel"
+        title={formatDisplayLabel(company)}
         sub="Research gathered from real interview reports and community sources."
       />
-      <div className="grid grid-cols-2 gap-5 mb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
         <div>
           {intel?.interview_rounds && intel.interview_rounds.length > 0 && (
-            <ProfileCard>
-              <CardEyebrow>📋 Interview Rounds</CardEyebrow>
+            <GlassCard hover className="mb-4">
+              <Eyebrow className="flex items-center gap-1.5">
+                <ClipboardList className="w-3 h-3" /> Interview Rounds
+              </Eyebrow>
               <div className="flex flex-wrap">
                 {intel.interview_rounds.map((r) => (
-                  <span key={r} className="inline-block bg-emerald-500/9 text-emerald-300 border border-emerald-500/18 rounded-[7px] text-[0.76rem] font-semibold px-2.5 py-1 m-0.5">
+                  <span key={r} className="inline-block bg-emerald-950/40 text-emerald-300 border border-emerald-800 rounded-[7px] text-[0.76rem] font-semibold px-2.5 py-1 m-0.5">
                     {r}
                   </span>
                 ))}
               </div>
-            </ProfileCard>
+            </GlassCard>
           )}
           {intel?.common_questions && intel.common_questions.length > 0 && (
-            <ProfileCard>
-              <CardEyebrow>❓ Commonly Asked Topics</CardEyebrow>
+            <GlassCard hover>
+              <Eyebrow className="flex items-center gap-1.5">
+                <HelpCircle className="w-3 h-3" /> Commonly Asked Topics
+              </Eyebrow>
               {intel.common_questions.map((q, i) => (
-                <div key={i} className="flex items-start gap-2.5 py-2 border-b border-[rgba(45,45,74,0.35)] last:border-0">
-                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }} />
-                  <span className="text-slate-300 text-[0.86rem] leading-relaxed">{q}</span>
+                <div key={i} className="flex items-start gap-2.5 py-2 border-b border-border last:border-0">
+                  <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-primary" />
+                  <span className="text-muted-foreground text-[0.86rem] leading-relaxed">{q}</span>
                 </div>
               ))}
-            </ProfileCard>
+            </GlassCard>
           )}
         </div>
         <div>
           {intel?.difficulty_notes && (
-            <ProfileCard>
-              <CardEyebrow>📊 Difficulty Notes</CardEyebrow>
-              <div className="bg-white/[0.02] border-l-[3px] border-indigo-500/40 rounded-r-[10px] px-4 py-3 text-slate-400 text-[0.85rem] leading-[1.75] mt-1.5">
+            <GlassCard hover className="mb-4">
+              <Eyebrow className="flex items-center gap-1.5">
+                <TrendingUp className="w-3 h-3" /> Difficulty Notes
+              </Eyebrow>
+              <div className="bg-secondary/50 border-l-[3px] border-primary/50 rounded-r-[10px] px-4 py-3 text-muted-foreground text-[0.85rem] leading-[1.75] mt-1.5">
                 {intel.difficulty_notes}
               </div>
-            </ProfileCard>
+            </GlassCard>
           )}
           {intel?.culture_notes && (
-            <ProfileCard>
-              <CardEyebrow>🌱 Culture Notes</CardEyebrow>
-              <div className="bg-white/[0.02] border-l-[3px] border-indigo-500/40 rounded-r-[10px] px-4 py-3 text-slate-400 text-[0.85rem] leading-[1.75] mt-1.5">
+            <GlassCard hover>
+              <Eyebrow className="flex items-center gap-1.5">
+                <Sprout className="w-3 h-3" /> Culture Notes
+              </Eyebrow>
+              <div className="bg-secondary/50 border-l-[3px] border-primary/50 rounded-r-[10px] px-4 py-3 text-muted-foreground text-[0.85rem] leading-[1.75] mt-1.5">
                 {intel.culture_notes}
               </div>
-            </ProfileCard>
+            </GlassCard>
           )}
         </div>
       </div>
 
-      {/* CTA */}
-      <Separator className="bg-white/5 my-10" />
-      <div className="max-w-md mx-auto text-center">
+      <Separator className="bg-border my-10" />
+      <div className="max-w-md mx-auto text-center pb-8">
         {result.dsa_available ? (
-          <button
-            onClick={onStartInterview}
-            className="w-full py-3.5 rounded-[14px] font-bold text-[0.95rem] text-white hover:-translate-y-0.5 transition-all"
-            style={{
-              background: "linear-gradient(135deg, #6366f1 0%, #7c3aed 100%)",
-              boxShadow: "0 4px 28px rgba(99,102,241,0.45)",
-            }}
-          >
-            🚀 Start Mock Interview
-          </button>
+          <PrimaryCta onClick={onStartInterview} className="py-3.5 text-[0.95rem]">
+            <span className="flex items-center justify-center gap-2">
+              <Rocket className="w-4 h-4" />
+              Start Mock Interview
+            </span>
+          </PrimaryCta>
         ) : (
-          <div className="bg-red-500/7 border border-red-500/18 rounded-[14px] px-6 py-4 text-red-300 text-[0.9rem]">
-            ⚠️ {result.dsa_message} Please ingest DSA questions for <strong>{company}</strong> first.
+          <div className="bg-red-950/40 border border-red-900 rounded-[14px] px-6 py-4 text-red-300 text-[0.9rem]">
+            {result.dsa_message} Please ingest DSA questions for <strong>{company}</strong> first.
           </div>
         )}
       </div>
     </div>
   );
 }
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
   const router = useRouter();
@@ -470,18 +492,39 @@ export default function HomePage() {
     sessionStorage.setItem("internly_role", rl);
   }
 
-  function handleStartInterview() {
-    router.push("/interview");
+  function handleBack() {
+    setResult(null);
+    setCompany("");
+    setRole("");
   }
 
   return (
-    <main className="max-w-[1180px] mx-auto px-6 pb-16">
-      <Navbar />
-      <Hero />
-      <SetupForm onResult={handleResult} />
-      {result && (
-        <Results result={result} company={company} role={role} onStartInterview={handleStartInterview} />
+    <div className="landing-shell">
+      <LandingBackground />
+      <LandingNav />
+
+      {result ? (
+        <main className="max-w-[1180px] mx-auto px-5 sm:px-8 py-8 pb-16">
+          <Results
+            result={result}
+            company={company}
+            role={role}
+            onStartInterview={() => router.push("/interview")}
+            onBack={handleBack}
+          />
+        </main>
+      ) : (
+        <main className="max-w-[1280px] mx-auto px-5 sm:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center min-h-[calc(100vh-4rem)] py-12 lg:py-16">
+            <section>
+              <LandingHero />
+            </section>
+            <section className="flex items-center justify-center lg:justify-end py-4">
+              <SetupForm onResult={handleResult} />
+            </section>
+          </div>
+        </main>
       )}
-    </main>
+    </div>
   );
 }
