@@ -71,6 +71,7 @@ export interface EvaluationResult {
 
 export interface LeetCodeResult {
   found: boolean;
+  paid_only?: boolean;
   title?: string;
   difficulty?: string;
   content_html?: string;
@@ -128,7 +129,9 @@ export async function fetchNextQuestion(
     body: JSON.stringify({ session_id: sessionId, company, used_question_ids: usedQuestionIds }),
   });
   if (!res.ok) throw new Error(`Failed to fetch question (${res.status})`);
-  return res.json();
+  const data: NextQuestionResult | null = await res.json();
+  if (!data || typeof data !== "object") return null;
+  return data;
 }
 
 export async function submitTurn(

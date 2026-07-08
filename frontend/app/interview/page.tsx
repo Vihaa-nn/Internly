@@ -621,7 +621,7 @@ function EvaluationPanel({
         {[
           { score: ev.technical_score, label: "Technical", sub: "Problem solving" },
           { score: ev.communication_score, label: "Communication", sub: "Clarity & reasoning" },
-          { score: ev.role_fit_score, label: "Role Fit", sub: "Resume + performance" },
+          { score: ev.role_fit_score, label: "Role Fit", sub: "Resume alignment" },
         ].map(({ score, label, sub }) => (
           <GlassCard key={label} className="p-5 text-center">
             <p className="text-[3rem] font-black leading-none mb-1 text-primary">
@@ -761,6 +761,12 @@ export default function InterviewPage() {
   const [initDone, setInitDone] = useState(false);
   const [fetchingNext, setFetchingNext] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const usedQuestionIdsRef = useRef<number[]>([]);
+  const loadNextQuestionRef = useRef<() => Promise<void>>(async () => {});
+
+  useEffect(() => {
+    usedQuestionIdsRef.current = usedQuestionIds;
+  }, [usedQuestionIds]);
 
   // Load result from sessionStorage
   useEffect(() => {
@@ -842,10 +848,15 @@ export default function InterviewPage() {
   }, [profileOpen]);
 
   const loadNextQuestion = useCallback(async () => {
-    if (!sessionId || fetchingNext) return;
     setFetchingNext(true);
     try {
-      const next = await fetchNextQuestion(sessionId, company, usedQuestionIds);
+      if (!sessionId) return;
+
+      const next = await fetchNextQuestion(
+        sessionId,
+        company,
+        usedQuestionIdsRef.current
+      );
       if (next) {
         setUsedQuestionIds(next.used_question_ids);
         setActiveQuestionIndex(next.question_index);
@@ -866,14 +877,32 @@ export default function InterviewPage() {
         ]);
       } else {
         setActiveQuestionText(null);
+        setActiveQuestionLink(null);
+        setLcContentHtml("");
       }
+    } catch (err: unknown) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "agent",
+          text:
+            err instanceof Error
+              ? `Could not load the next question: ${err.message}`
+              : "Could not load the next question. Please try again.",
+          type: "guide",
+        },
+      ]);
     } finally {
       setFetchingNext(false);
     }
-  }, [sessionId, company, usedQuestionIds, fetchingNext]);
+  }, [sessionId, company]);
+
+  useEffect(() => {
+    loadNextQuestionRef.current = loadNextQuestion;
+  }, [loadNextQuestion]);
 
   async function handleSend(text: string) {
-    if (!sessionId || candidateId === null) return;
+    if (!sessionId || candidateId === null || fetchingNext || turnLoading) return;
     setMessages((prev) => [...prev, { role: "user", text }]);
     setTurnLoading(true);
     try {
@@ -894,13 +923,16 @@ export default function InterviewPage() {
         if (activeQuestionText !== "Introduction") {
           setQuestionsCompleted((n) => n + 1);
         }
-        setActiveQuestionText(null);
+        setFetchingNext(true);
         setActiveQuestionLink(null);
         setLcContentHtml("");
+        const scheduleNext = () => {
+          void loadNextQuestionRef.current();
+        };
         if (activeQuestionText === "Introduction") {
-          void loadNextQuestion();
+          scheduleNext();
         } else {
-          setTimeout(() => loadNextQuestion(), 800);
+          setTimeout(scheduleNext, 800);
         }
       }
     } catch (err: unknown) {
