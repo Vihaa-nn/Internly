@@ -2,7 +2,12 @@ import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from internly.agents.resume_evaluator import load_resume_text, evaluate_resume_text, evaluate_resume_file
+from internly.agents.resume_evaluator import (
+    _guess_name_from_resume,
+    load_resume_text,
+    evaluate_resume_text,
+    evaluate_resume_file,
+)
 from internly.schemas import ResumeProfile
 
 
@@ -43,27 +48,26 @@ def test_load_resume_text_docx(mock_docx_loader_cls):
     mock_loader.load.assert_called_once()
 
 
+@patch("internly.agents.resume_evaluator.ChatPromptTemplate")
 @patch("internly.agents.resume_evaluator.get_chat_model")
-def test_evaluate_resume_text(mock_get_chat_model):
-    mock_llm = MagicMock()
-    mock_structured_llm = MagicMock()
-    mock_get_chat_model.return_value = mock_llm
-    mock_llm.with_structured_output.return_value = mock_structured_llm
-    
+def test_evaluate_resume_text(mock_get_chat_model, mock_prompt_cls):
+    mock_chain = MagicMock()
+    mock_prompt = MagicMock()
+    mock_prompt_cls.from_messages.return_value = mock_prompt
+    mock_prompt.__or__ = MagicMock(return_value=mock_chain)
+
     expected_profile = ResumeProfile(
         skills=["Python", "FastAPI", "React"],
         years_experience=3.5,
         projects=["E-commerce backend", "Chatbot UI"],
         education="B.E. in Information Technology",
-        notable_gaps=["6-month career break in 2024"]
+        notable_gaps=["6-month career break in 2024"],
     )
-    mock_structured_llm.return_value = expected_profile
-    mock_structured_llm.invoke.return_value = expected_profile
-    
+    mock_chain.invoke.return_value = expected_profile
+
     result = evaluate_resume_text("dummy resume text content")
     assert result == expected_profile
     mock_get_chat_model.assert_called_once_with(temperature=0)
-    mock_llm.with_structured_output.assert_called_once_with(ResumeProfile)
 
 
 
@@ -85,3 +89,32 @@ def test_evaluate_resume_file(mock_eval_text, mock_load_text):
     assert profile == expected_profile
     mock_load_text.assert_called_once_with("some_file.pdf")
     mock_eval_text.assert_called_once_with("File text content", None)
+
+
+def test_guess_name_from_resume():
+    text = "Rahul Sharma\nrahul@example.com\nSkills: Python"
+    assert _guess_name_from_resume(text) == "Rahul Sharma"
+
+
+@patch("internly.agents.resume_evaluator.ChatPromptTemplate")
+@patch("internly.agents.resume_evaluator.get_chat_model")
+def test_evaluate_resume_text_clears_jd_fields_without_jd(mock_get_chat_model, mock_prompt_cls):
+    mock_chain = MagicMock()
+    mock_prompt = MagicMock()
+    mock_prompt_cls.from_messages.return_value = mock_prompt
+    mock_prompt.__or__ = MagicMock(return_value=mock_chain)
+
+    noisy_profile = ResumeProfile(
+        name="",
+        alignment_signals=["Grand Finalist, Smart India Hackathon"],
+        skill_gaps=["No Java"],
+        achievements=["Micromouse 3rd place"],
+    )
+    mock_chain.invoke.return_value = noisy_profile
+
+    result = evaluate_resume_text("Priya Patel\nPython developer", job_description=None)
+
+    assert result.alignment_signals == []
+    assert result.skill_gaps == []
+    assert result.name == "Priya Patel"
+    assert result.achievements == ["Micromouse 3rd place"]

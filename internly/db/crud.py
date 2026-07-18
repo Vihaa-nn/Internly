@@ -13,7 +13,7 @@ from internly.db.models import (
     InterviewSession,
 )
 from internly.schemas import CompanyIntel, Evaluation, ResumeProfile
-from internly.utils import normalize_name
+from internly.utils import format_display_label, normalize_name
 
 
 def create_candidate(
@@ -27,6 +27,7 @@ def create_candidate(
 ) -> Candidate:
     candidate = Candidate(
         resume_text=resume_text,
+        name=profile.name,
         skills=profile.skills,
         years_experience=profile.years_experience,
         projects=profile.projects,
@@ -36,6 +37,7 @@ def create_candidate(
         target_company=target_company,
         job_description=job_description,
         target_languages=profile.target_languages,
+        achievements=profile.achievements,
         alignment_signals=profile.alignment_signals,
         skill_gaps=profile.skill_gaps,
     )
@@ -58,7 +60,7 @@ def save_company_intel(
     company: str,
     role: str,
     intel: CompanyIntel,
-    raw_research_text: str | None = None,
+    interview_playbook_text: str | None = None,
 ) -> CompanyIntelRecord:
     existing = get_company_intel(session, company, role)
     if existing:
@@ -66,7 +68,8 @@ def save_company_intel(
         existing.common_questions = intel.common_questions
         existing.difficulty_notes = intel.difficulty_notes
         existing.culture_notes = intel.culture_notes
-        existing.raw_research_text = raw_research_text
+        if interview_playbook_text is not None:
+            existing.interview_playbook_text = interview_playbook_text
         existing.last_updated = datetime.utcnow()
         session.flush()
         return existing
@@ -80,7 +83,7 @@ def save_company_intel(
         common_questions=intel.common_questions,
         difficulty_notes=intel.difficulty_notes,
         culture_notes=intel.culture_notes,
-        raw_research_text=raw_research_text,
+        interview_playbook_text=interview_playbook_text,
     )
     session.add(record)
     session.flush()
@@ -160,18 +163,22 @@ def create_interview_session(
     session: Session,
     candidate_id: int,
     include_greeting: bool = False,
+    greeting_text: str | None = None,
 ) -> InterviewSession:
     if include_greeting:
-        candidate = session.get(Candidate, candidate_id)
-        role = candidate.target_role if candidate else "Software Engineer"
-        company = candidate.target_company if candidate else "the company"
-        
-        welcome_text = (
-            f"Hello! I am Alex, and I will be conducting your mock interview today for the {role} "
-            f"position at {company}. I have reviewed your resume. Before we jump into the technical "
-            "Data Structures and Algorithms problems, could you briefly introduce yourself "
-            "and share some details about your background and recent projects?"
-        )
+        if greeting_text:
+            welcome_text = greeting_text
+        else:
+            candidate = session.get(Candidate, candidate_id)
+            role = format_display_label(candidate.target_role if candidate else "Software Engineer")
+            company = format_display_label(candidate.target_company if candidate else "the company")
+
+            welcome_text = (
+                f"Hello! I am Alex, and I will be conducting your mock interview today for the {role} "
+                f"position at {company}. I have reviewed your resume. Before we jump into the technical "
+                "Data Structures and Algorithms problems, could you briefly introduce yourself "
+                "and share some details about your background and recent projects?"
+            )
         
         transcript = [
             {

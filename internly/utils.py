@@ -8,6 +8,45 @@ def normalize_name(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.strip().lower()).strip()
 
 
+_LOWERCASE_WORDS = frozenset(
+    {"and", "or", "of", "the", "a", "an", "in", "for", "at", "to", "on"}
+)
+
+
+def _format_word(word: str, *, is_first: bool) -> str:
+    if not word:
+        return word
+    if re.fullmatch(r"[A-Z]{2,}", word):
+        return word
+    if re.fullmatch(r"[A-Z0-9]+", word) and len(word) <= 5:
+        return word
+    lower = word.lower()
+    if not is_first and lower in _LOWERCASE_WORDS:
+        return lower
+    return lower[:1].upper() + lower[1:]
+
+
+def format_display_label(value: str) -> str:
+    """Title-case company names, job titles, and similar user-entered labels."""
+    trimmed = value.strip()
+    if not trimmed:
+        return ""
+
+    parts: list[str] = []
+    for word_index, word in enumerate(trimmed.split()):
+        if "-" in word:
+            hyphen_parts = word.split("-")
+            parts.append(
+                "-".join(
+                    _format_word(part, is_first=word_index == 0 and part_index == 0)
+                    for part_index, part in enumerate(hyphen_parts)
+                )
+            )
+        else:
+            parts.append(_format_word(word, is_first=word_index == 0))
+    return " ".join(parts)
+
+
 def parse_float(value: object) -> float | None:
     if value is None:
         return None

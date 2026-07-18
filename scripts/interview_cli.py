@@ -43,6 +43,7 @@ def main() -> None:
                 session,
                 interview_session_id=interview.id,
                 company=candidate.target_company,
+                role=candidate.target_role,
                 used_question_ids=used_question_ids,
             )
             if not asked:
@@ -52,7 +53,7 @@ def main() -> None:
             print(f"\nQuestion: {asked.display_text}")
             while True:
                 response = input("\nYour approach/pseudocode: ").strip()
-                action = handle_candidate_turn(
+                action, _session_context = handle_candidate_turn(
                     session,
                     interview_session_id=interview.id,
                     question_index=asked.question_index,
