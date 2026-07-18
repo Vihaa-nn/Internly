@@ -30,7 +30,6 @@ def main() -> None:
                 difficulty_notes="Medium DSA focus.",
                 culture_notes="Collaborative engineering culture.",
             ),
-            raw_research_text="Dummy research text.",
         )
         question = crud.upsert_dsa_question(
             session,

@@ -81,6 +81,54 @@ def synthesize_company_intel(company: str, role: str, raw_research_text: str) ->
     )
 
 
+def generate_interview_playbook(company: str, role: str, raw_research_text: str) -> str:
+    """Curated DSA/coding-round playbook from in-memory Tavily research (not stored raw)."""
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You write a concise interview playbook for a DSA/coding technical round only. "
+                "Output structured prose (~500–800 words) covering: how interviewers probe, "
+                "follow-up patterns, complexity expectations, communication bar, and typical "
+                "problem difficulty. Ground points in the research provided. "
+                "Exclude HR, salary, offer negotiation, and unrelated culture fluff.",
+            ),
+            (
+                "human",
+                "Company: {company}\nRole: {role}\n\nRaw research:\n{raw_research_text}",
+            ),
+        ]
+    )
+    llm = get_chat_model(temperature=0.1)
+    chain = prompt | llm
+    response = chain.invoke(
+        {"company": company, "role": role, "raw_research_text": raw_research_text}
+    )
+    return _llm_content_to_str(response)
+
+
+def _llm_content_to_str(response: object) -> str:
+    """Normalize LangChain/Gemini message content (str or list of blocks) to plain text."""
+    content = getattr(response, "content", response)
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts: list[str] = []
+        for block in content:
+            if isinstance(block, str):
+                parts.append(block)
+            elif isinstance(block, dict):
+                text = block.get("text")
+                if text:
+                    parts.append(str(text))
+            elif hasattr(block, "text"):
+                parts.append(str(block.text))
+            else:
+                parts.append(str(block))
+        return "\n".join(parts).strip()
+    return str(content).strip()
+
+
 def _build_query(company: str, role: str) -> str:
     return (
         f'{company} {role} interview process India AmbitionBox Glassdoor Naukri '

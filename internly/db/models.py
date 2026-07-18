@@ -14,6 +14,7 @@ class Candidate(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     resume_text: Mapped[str] = mapped_column(Text)
+    name: Mapped[str] = mapped_column(String(255), default="")
     skills: Mapped[list[str]] = mapped_column(JSON, default=list)
     years_experience: Mapped[float] = mapped_column(Float, default=0.0)
     projects: Mapped[list[str]] = mapped_column(JSON, default=list)
@@ -23,6 +24,7 @@ class Candidate(Base):
     target_company: Mapped[str] = mapped_column(String(255), index=True)
     job_description: Mapped[str | None] = mapped_column(Text, nullable=True)
     target_languages: Mapped[list[str]] = mapped_column(JSON, default=list)
+    achievements: Mapped[list[str]] = mapped_column(JSON, default=list)
     alignment_signals: Mapped[list[str]] = mapped_column(JSON, default=list)
     skill_gaps: Mapped[list[str]] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
@@ -46,6 +48,7 @@ class CompanyIntelRecord(Base):
     difficulty_notes: Mapped[str] = mapped_column(Text, default="")
     culture_notes: Mapped[str] = mapped_column(Text, default="")
     raw_research_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    interview_playbook_text: Mapped[str | None] = mapped_column(Text, nullable=True)
     last_updated: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=func.now())
 
 
@@ -94,6 +97,7 @@ class EvaluationRecord(Base):
     weaknesses: Mapped[list[str]] = mapped_column(JSON, default=list)
     recommendation: Mapped[str] = mapped_column(Text)
     detailed_feedback: Mapped[str] = mapped_column(Text)
+    question_breakdown: Mapped[list[dict]] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     session: Mapped[InterviewSession] = relationship(back_populates="evaluation")

@@ -6,12 +6,14 @@ from pydantic import BaseModel, Field
 
 
 class ResumeProfile(BaseModel):
+    name: str = ""
     skills: list[str] = Field(default_factory=list)
     years_experience: float = 0.0
     projects: list[str] = Field(default_factory=list)
     education: str = ""
     notable_gaps: list[str] = Field(default_factory=list)
     target_languages: list[str] = Field(default_factory=list)
+    achievements: list[str] = Field(default_factory=list)
     alignment_signals: list[str] = Field(default_factory=list)
     skill_gaps: list[str] = Field(default_factory=list)
 
@@ -24,7 +26,7 @@ class CompanyIntel(BaseModel):
 
 
 class InterviewAction(BaseModel):
-    type: Literal["hint", "followup", "guide", "accept"]
+    type: Literal["hint", "followup", "guide", "accept", "conversation"]
     text: str
     reasoning: str = Field(
         default="",
@@ -37,6 +39,14 @@ class OptimalSolution(BaseModel):
     optimal_time_complexity: str
 
 
+class QuestionBreakdown(BaseModel):
+    question: str
+    difficulty: str = ""
+    outcome: str = "partial"  # "solved" | "guided" | "skipped" | "partial"
+    hints_given: int = 0
+    notes: str = ""
+
+
 class Evaluation(BaseModel):
     technical_score: int = Field(ge=1, le=10)
     communication_score: int = Field(ge=1, le=10)
@@ -45,6 +55,7 @@ class Evaluation(BaseModel):
     weaknesses: list[str] = Field(default_factory=list)
     recommendation: str
     detailed_feedback: str
+    question_breakdown: list[QuestionBreakdown] = Field(default_factory=list)
 
 
 class PipelineStartResult(BaseModel):

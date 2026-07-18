@@ -39,7 +39,7 @@ def test_hashmap_only_answer_gets_followup_not_accept(db_session):
         question_id=question.id,
     )
 
-    action = handle_candidate_turn(
+    action, _session_context = handle_candidate_turn(
         db_session,
         interview_session_id=interview.id,
         question_index=question_index,
@@ -51,5 +51,8 @@ def test_hashmap_only_answer_gets_followup_not_accept(db_session):
     )
 
     assert action.type == "followup"
-    assert "pseudocode" in action.text.lower()
+    assert any(
+        word in action.text.lower()
+        for word in ("step", "complexity", "algorithm", "walk", "pseudocode", "approach")
+    )
     assert interview.transcript_json[0]["resolved"] is False

@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import concurrent.futures
-import threading
 from pathlib import Path
 
-from internly.agents.research_agent import search_company_interview_intel, synthesize_company_intel
+from internly.agents.research_agent import (
+    generate_interview_playbook,
+    search_company_interview_intel,
+    synthesize_company_intel,
+)
 from internly.agents.resume_evaluator import evaluate_resume_file, evaluate_resume_text
 from internly.config import settings
 from internly.db import crud
+from internly.services.research_service import ensure_interview_playbook
 from internly.schemas import CompanyIntel, PipelineStartResult, ResumeProfile
-from internly.services.vector_store import index_company_intel_text
 
 
 def run_pipeline_start(
@@ -22,8 +25,6 @@ def run_pipeline_start(
     allow_search: bool = True,
     job_description: str | None = None,
 ) -> PipelineStartResult:
-    # ── 1. Fetch DSA status and check if company intel is cached in DB ─────────
-    # These DB lookups are extremely fast (< 5ms)
     dsa_questions = crud.get_top_dsa_questions(session, target_company, limit=settings.top_dsa_questions)
     dsa_available = bool(dsa_questions)
     dsa_message = (
@@ -35,7 +36,6 @@ def run_pipeline_start(
     company_intel_record = crud.get_company_intel(session, target_company, target_role)
     need_search = (company_intel_record is None) and allow_search
 
-    # Define tasks for concurrent execution
     def parse_resume():
         if resume_file_path:
             return evaluate_resume_file(resume_file_path, job_description)
@@ -47,22 +47,20 @@ def run_pipeline_start(
     def fetch_and_synthesize_intel():
         raw_text = search_company_interview_intel(target_company, target_role)
         intel = synthesize_company_intel(target_company, target_role, raw_text)
-        return raw_text, intel
+        playbook = generate_interview_playbook(target_company, target_role, raw_text)
+        return intel, playbook
 
-    # ── 2. Run independent API & LLM operations in parallel ──────────────────
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         resume_future = executor.submit(parse_resume)
         research_future = executor.submit(fetch_and_synthesize_intel) if need_search else None
 
-        # Gather results (blocks until thread tasks complete)
         raw_resume_text, resume_profile = resume_future.result()
         if research_future:
-            raw_research_text, company_intel = research_future.result()
+            company_intel, interview_playbook = research_future.result()
         else:
-            raw_research_text = None
             company_intel = None
+            interview_playbook = None
 
-    # ── 3. DB Writes (must be run on the main thread using 'session') ──────────
     candidate = crud.create_candidate(
         session,
         resume_text=raw_resume_text,
@@ -78,16 +76,10 @@ def run_pipeline_start(
             company=target_company,
             role=target_role,
             intel=company_intel,
-            raw_research_text=raw_research_text,
+            interview_playbook_text=interview_playbook,
         )
-        # Background index to Chroma so it doesn't block UI load
-        if raw_research_text:
-            threading.Thread(
-                target=index_company_intel_text,
-                args=(target_company, target_role, raw_research_text),
-                daemon=True,
-            ).start()
     elif company_intel_record:
+        ensure_interview_playbook(session, target_company, target_role)
         company_intel = CompanyIntel(
             interview_rounds=company_intel_record.interview_rounds,
             common_questions=company_intel_record.common_questions,
@@ -106,12 +98,14 @@ def run_pipeline_start(
 
 def resume_profile_from_candidate(candidate) -> ResumeProfile:
     return ResumeProfile(
+        name=getattr(candidate, "name", "") or "",
         skills=candidate.skills,
         years_experience=candidate.years_experience,
         projects=candidate.projects,
         education=candidate.education,
         notable_gaps=candidate.notable_gaps,
         target_languages=getattr(candidate, "target_languages", []),
+        achievements=getattr(candidate, "achievements", []),
         alignment_signals=getattr(candidate, "alignment_signals", []),
         skill_gaps=getattr(candidate, "skill_gaps", []),
     )
